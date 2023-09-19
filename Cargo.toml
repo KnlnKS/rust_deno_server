@@ -6,3 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+axum = "0.6.20"
+deno_core = "0.214.0"
+serde = "1.0.188"
+tokio = "1.32.0"
