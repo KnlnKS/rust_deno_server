@@ -33,35 +33,32 @@ pub async fn index() -> impl IntoResponse {
     });
 
     let script = r#"
-    // Print helper function, calling Deno.core.print()
     ((globalThis) => {
-      globalThis.console = {
-        log: (...args) => {
-          Deno.core.print(JSON.stringify({ console_method: "log", args }));
+      const originalConsole = console;
+      const consoleProxy = new Proxy(originalConsole, {
+        get(_target, propKey) {
+          return function (...args) {
+            Deno?.core?.print(JSON.stringify({ function: propKey, args })+"\n");
+          };
         },
-      };
+      });
+      globalThis.console = consoleProxy;
     })(globalThis);
     
     console.log("Hello World!");
     
-    
-    
-    function print(value) {
-      Deno.core.print(value.toString()+"\n");
-    }
-    
     const arr = [1, 2, 3];
-    print("The sum of");
-    print(arr);
-    print("is");
-    print(Deno.core.ops.op_sum(arr));
+    console.log("The sum of");
+    console.log(arr);
+    console.log("is");
+    console.log(Deno.core.ops.op_sum(arr));
     
     // And incorrect usage
     try {
-      print(Deno.core.ops.op_sum(0));
+      console.log(Deno.core.ops.op_sum(0));
     } catch(e) {
-      print('Exception:');
-      print(e);
+      console.log('Exception:');
+      console.log(e);
     }
     "#;
 

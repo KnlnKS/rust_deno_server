@@ -1,10 +1,4 @@
-use axum::{
-    http::StatusCode,
-    response::IntoResponse,
-    routing::{get, post},
-    Json, Router,
-};
-use serde::{Deserialize, Serialize};
+use axum::{routing::get, Router};
 use std::net::SocketAddr;
 
 mod routes;
