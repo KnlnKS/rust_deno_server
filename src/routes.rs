@@ -1,12 +1,12 @@
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Json;
 use deno_core::op;
 use deno_core::Extension;
 use deno_core::JsRuntime;
 use deno_core::Op;
 use deno_core::RuntimeOptions;
-use serde::Deserialize;
+use gag::BufferRedirect;
+use std::io::Read;
 
 /// An op for summing an array of numbers. The op-layer automatically
 /// deserializes inputs and serializes the returned Result & value.
@@ -38,7 +38,8 @@ pub async fn index() -> impl IntoResponse {
       const consoleProxy = new Proxy(originalConsole, {
         get(_target, propKey) {
           return function (...args) {
-            Deno?.core?.print(JSON.stringify({ function: propKey, args })+"\n");
+            // TODO: Check if an object and stringify if possible?
+            Deno?.core?.print(JSON.stringify({ function: propKey, args })+",");
           };
         },
       });
@@ -62,13 +63,19 @@ pub async fn index() -> impl IntoResponse {
     }
     "#;
 
-    // Now we see how to invoke the op we just defined. The runtime automatically
-    // contains a Deno.core object with several functions for interacting with it.
-    // You can find its definition in core.js.
+    // Redirect stdout to a buffer
+    let mut buf = BufferRedirect::stdout().unwrap();
     let runtime_result = runtime.execute_script_static("<usage>", script);
+    let mut output = String::new();
+    buf.read_to_string(&mut output).unwrap();
+
+    // Remove trailing comma
+    if output.ends_with(",") {
+        output.pop();
+    }
 
     return match runtime_result {
-        Ok(_) => (StatusCode::OK, "Yaay!".to_string()),
+        Ok(_) => (StatusCode::OK, format!("[{}]", output)),
         Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
     };
 }

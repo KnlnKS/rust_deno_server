@@ -8,5 +8,6 @@ edition = "2021"
 [dependencies]
 axum = "0.6.20"
 deno_core = "0.214.0"
+gag = "1.0.0"
 serde = "1.0.188"
 tokio = "1.32.0"
